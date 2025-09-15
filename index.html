@@ -27,11 +27,29 @@
       text-align: center;
       padding: 20px;
       font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    .calendar-header button {
+      background-color: transparent;
+      color: white;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      user-select: none;
+      padding: 0 10px;
+      transition: color 0.3s ease;
+    }
+    .calendar-header button:hover {
+      color: #a5d6a7;
     }
 
     .calendar-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
     .calendar-table th, .calendar-table td {
@@ -40,25 +58,37 @@
       text-align: center;
       padding: 20px;
       vertical-align: top;
+      word-wrap: break-word;
     }
 
-    .calendar-table th {
-      background-color: #eee;
+    .calendar-table th:first-child, .calendar-table td:first-child {
+      width: 5%;
+      background-color: #f0f0f0;
+      font-size: 12px;
       font-weight: bold;
+      user-select: none;
     }
 
     .week-number {
       background-color: #f0f0f0;
       font-size: 12px;
       font-weight: bold;
+      padding: 10px 5px;
     }
 
     .calendar-day {
       cursor: pointer;
+      min-height: 60px;
+      position: relative;
+      transition: background-color 0.2s ease;
     }
 
     .calendar-day:hover {
       background-color: #f9f9f9;
+    }
+
+    .calendar-day.has-event {
+      background-color: #e0f7e0;
     }
 
     .event-popup {
@@ -72,21 +102,33 @@
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.3);
       z-index: 1000;
-      width: 300px;
+      width: 320px;
+      max-width: 90%;
     }
 
     .event-popup input, .event-popup textarea {
       width: 100%;
       padding: 8px;
       margin-bottom: 10px;
+      box-sizing: border-box;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
     }
 
     .event-popup button {
-      padding: 10px;
+      padding: 10px 15px;
       background-color: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .event-popup button:hover {
+      background-color: #45a049;
     }
 
     .event-popup .close {
@@ -97,12 +139,22 @@
       border: none;
       background: none;
       cursor: pointer;
+      color: #666;
+      font-weight: bold;
     }
 
     @media (max-width: 600px) {
       .calendar-table th, .calendar-table td {
-        padding: 10px;
+        padding: 10px 5px;
         font-size: 12px;
+      }
+      .calendar-header {
+        font-size: 18px;
+        gap: 10px;
+      }
+      .calendar-header button {
+        font-size: 22px;
+        padding: 0 5px;
       }
     }
   </style>
@@ -110,7 +162,11 @@
 <body>
 
 <div class="calendar">
-  <div class="calendar-header" id="calendar-header"></div>
+  <div class="calendar-header">
+    <button onclick="changeMonth(-1)">◀</button>
+    <span id="calendar-header"></span>
+    <button onclick="changeMonth(1)">▶</button>
+  </div>
   <table class="calendar-table" id="calendar-table">
     <!-- Kalender byggs med JavaScript -->
   </table>
@@ -119,8 +175,8 @@
 <div class="event-popup" id="event-popup">
   <button class="close" onclick="closePopup()">×</button>
   <h3>Händelse för <span id="event-date"></span></h3>
-  <input type="text" id="event-title" placeholder="Titel">
-  <textarea id="event-description" placeholder="Beskrivning"></textarea>
+  <input type="text" id="event-title" placeholder="Titel" />
+  <textarea id="event-description" placeholder="Beskrivning" rows="4"></textarea>
   <button onclick="saveEvent()">Spara</button>
   <button onclick="clearEvent()" style="background-color: #d9534f; margin-left: 10px;">Rensa</button>
 </div>
@@ -129,6 +185,11 @@
   const months = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
   const weekdays = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
   let selectedDate = null;
+
+  // Håll koll på vilken månad som visas
+  const today = new Date();
+  let currentYear = today.getFullYear();
+  let currentMonth = today.getMonth();
 
   // Läs händelser från localStorage (eller skapa tom)
   let events = JSON.parse(localStorage.getItem("calendarEvents")) || {};
@@ -143,9 +204,8 @@
   }
 
   function renderCalendar() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
+    const year = currentYear;
+    const month = currentMonth;
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
@@ -177,12 +237,15 @@
     weekCell.className = 'week-number';
     weekCell.textContent = "v. " + firstWeekNumber;
 
+    // Fyll ut tomma celler innan första dagen i månaden
     for (let i = 0; i < firstWeekday; i++) {
       row.insertCell();
     }
 
     for (let day = 1; day <= lastDay.getDate(); day++) {
       currentDate = new Date(year, month, day);
+
+      // Börja en ny rad för varje vecka (varje 7 dagar + vecka cellen)
       if (row.cells.length === 8) {
         row = tbody.insertRow();
         const weekNum = getWeekNumber(currentDate);
@@ -198,7 +261,7 @@
 
       const dateString = currentDate.toISOString().split('T')[0];
       if (events[dateString]) {
-        cell.style.backgroundColor = '#e0f7e0';
+        cell.classList.add('has-event');
       }
     }
   }
@@ -234,18 +297,30 @@
     renderCalendar();
   }
 
-function clearEvent() {
-  if (!selectedDate) return;
+  function clearEvent() {
+    if (!selectedDate) return;
 
-  const dateString = selectedDate.toISOString().split('T')[0];
-  if (events[dateString]) {
-    delete events[dateString];
-    localStorage.setItem("calendarEvents", JSON.stringify(events));
+    const dateString = selectedDate.toISOString().split('T')[0];
+    if (events[dateString]) {
+      delete events[dateString];
+      localStorage.setItem("calendarEvents", JSON.stringify(events));
+    }
+
+    closePopup();
+    renderCalendar();
   }
 
-  closePopup();
-  renderCalendar();
-}
+  function changeMonth(direction) {
+    currentMonth += direction;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    } else if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    }
+    renderCalendar();
+  }
 
   renderCalendar();
 </script>
