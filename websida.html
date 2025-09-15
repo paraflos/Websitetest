@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .calendar {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 300px;
+            background-color: #fff;
+        }
+        .calendar-header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 1.2em;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border-top: 1px solid #ccc;
+        }
+        .calendar-day {
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+        }
+        .calendar-day:hover {
+            background-color: #f0f0f0;
+        }
+        .event-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        .event-popup input, .event-popup textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+        .event-popup button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .event-popup button:hover {
+            background-color: #45a049;
+        }
+        .close-popup {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calendar">
+    <div class="calendar-header" id="calendar-header">
+        <!-- Kalenderns rubrik, t.ex. månad och år -->
+    </div>
+    <div class="calendar-days" id="calendar-days">
+        <!-- Dagarnas rutor kommer här -->
+    </div>
+</div>
+
+<!-- Pop-up för att lägga till händelser -->
+<div class="event-popup" id="event-popup">
+    <button class="close-popup" onclick="closePopup()">×</button>
+    <h3>Lägg till en händelse</h3>
+    <input type="text" id="event-title" placeholder="Titel på händelse">
+    <textarea id="event-description" placeholder="Beskrivning"></textarea>
+    <button onclick="saveEvent()">Spara händelse</button>
+</div>
+
+<script>
+    const months = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
+    const currentDate = new Date();
+    let selectedDate = null;
+    const events = {}; // För att lagra händelser per datum
+
+    // Funktion för att rendera kalendern
+    function renderCalendar() {
+        const month = currentDate.getMonth();
+        const year = currentDate.getFullYear();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        const calendarHeader = document.getElementById('calendar-header');
+        calendarHeader.textContent = `${months[month]} ${year}`;
+        
+        const calendarDays = document.getElementById('calendar-days');
+        calendarDays.innerHTML = '';
+        
+        // Lägg till veckodagsnamn
+        const weekdays = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
+        weekdays.forEach(day => {
+            const dayElement = document.createElement('div');
+            dayElement.textContent = day;
+            dayElement.style.fontWeight = "bold";
+            calendarDays.appendChild(dayElement);
+        });
+
+        // Lägg till dagar i månaden
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            const emptyCell = document.createElement('div');
+            calendarDays.appendChild(emptyCell);
+        }
+
+        for (let i = 1; i <= lastDay.getDate(); i++) {
+            const dayCell = document.createElement('div');
+            dayCell.classList.add('calendar-day');
+            dayCell.textContent = i;
+            dayCell.onclick = () => showPopup(year, month, i);
+            
+            // Kontrollera om det finns en händelse för den här dagen
+            const dateString = new Date(year, month, i).toISOString().split('T')[0]; // yyyy-mm-dd
+            if (events[dateString]) {
+                dayCell.style.backgroundColor = '#ddd'; // Markera dagar med händelser
+            }
+            
+            calendarDays.appendChild(dayCell);
+        }
+    }
+
+    // Funktion för att visa pop-up för att lägga till händelse
+    function showPopup(year, month, day) {
+        selectedDate = new Date(year, month, day);
+        const eventPopup = document.getElementById('event-popup');
+        document.getElementById('event-title').value = ''; // Rensa tidigare titel
+        document.getElementById('event-description').value = ''; // Rensa tidigare beskrivning
+
+        // Kontrollera om det redan finns en händelse
+        const dateString = selectedDate.toISOString().split('T')[0];
+        if (events[dateString] && events[dateString].length > 0) {
+            document.getElementById('event-title').value = events[dateString][0].title;
+            document.getElementById('event-description').value = events[dateString][0].description;
+        }
+
+        eventPopup.style.display = 'block';
+    }
+
+    // Funktion för att stänga pop-up
+    function closePopup() {
+        const eventPopup = document.getElementById('event-popup');
+        eventPopup.style.display = 'none';
+    }
+
+    // Funktion för att spara händelsen
+    function saveEvent() {
+        const title = document.getElementById('event-title').value;
+        const description = document.getElementById('event-description').value;
+
+        if (!title) {
+            alert("Titeln är obligatorisk!");
+            return;
+        }
+
+        const dateString = selectedDate.toISOString().split('T')[0]; // yyyy-mm-dd
+        if (!events[dateString]) {
+            events[dateString] = [];
+        }
+
+        // Lägg till ny händelse för detta datum
+        events[dateString] = [{ title, description }];
+        alert("Händelsen sparades!");
+
+        // Stäng pop-up och rendera kalendern igen
+        closePopup();
+        renderCalendar();
+    }
+
+    // Initiera kalendern
+    renderCalendar();
+</script>
+
+</body>
+</html>
