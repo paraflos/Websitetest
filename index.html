@@ -122,6 +122,7 @@
   <input type="text" id="event-title" placeholder="Titel">
   <textarea id="event-description" placeholder="Beskrivning"></textarea>
   <button onclick="saveEvent()">Spara</button>
+  <button onclick="clearEvent()" style="background-color: #d9534f; margin-left: 10px;">Rensa</button>
 </div>
 
 <script>
@@ -232,6 +233,19 @@
     closePopup();
     renderCalendar();
   }
+
+function clearEvent() {
+  if (!selectedDate) return;
+
+  const dateString = selectedDate.toISOString().split('T')[0];
+  if (events[dateString]) {
+    delete events[dateString];
+    localStorage.setItem("calendarEvents", JSON.stringify(events));
+  }
+
+  closePopup();
+  renderCalendar();
+}
 
   renderCalendar();
 </script>
