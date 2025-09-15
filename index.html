@@ -1,36 +1,33 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kalender med Google-login</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 20px; }
-    .calendar { max-width: 90%; margin: auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .calendar-header { background-color: #4CAF50; color: white; text-align: center; padding: 20px; font-size: 24px; display: flex; justify-content: center; align-items: center; gap: 20px; }
-    .calendar-header button { background-color: transparent; color: white; border: none; font-size: 28px; cursor: pointer; user-select: none; padding: 0 10px; transition: color 0.3s ease; }
-    .calendar-header button:hover { color: #a5d6a7; }
-    .calendar-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    .calendar-table th, .calendar-table td { width: 12.5%; border: 1px solid #ddd; text-align: center; padding: 20px; vertical-align: top; word-wrap: break-word; }
-    .calendar-table th:first-child, .calendar-table td:first-child { width: 5%; background-color: #f0f0f0; font-size: 12px; font-weight: bold; user-select: none; }
-    .week-number { background-color: #f0f0f0; font-size: 12px; font-weight: bold; padding: 10px 5px; }
-    .calendar-day { cursor: pointer; min-height: 60px; position: relative; transition: background-color 0.2s ease; }
-    .calendar-day:hover { background-color: #f9f9f9; }
-    .calendar-day.has-event { background-color: #e0f7e0; }
-    .event-popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.3);
-      z-index: 1000; width: 320px; max-width: 90%;
-    }
-    .event-popup input, .event-popup textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; }
-    .event-popup button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 14px; }
-    .event-popup button:hover { background-color: #45a049; }
-    .event-popup .close { position: absolute; top: 8px; right: 12px; font-size: 18px; border: none; background: none; cursor: pointer; color: #666; font-weight: bold; }
-    #login-section { text-align: center; margin-bottom: 20px; }
-    #logoutBtn { display: none; }
-    #day-selection { display: none; text-align: center; margin-top: 20px; }
-    .day-button { background-color: #007BFF; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 25px; margin: 5px; cursor: pointer; transition: background-color 0.3s, transform 0.3s; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
-    .day-button:hover { background-color: #0056b3; transform: translateY(-2px); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalender med Google-login</title>
+<style>
+body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin:0; padding:20px; }
+.calendar { max-width: 90%; margin: auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+.calendar-header { background-color:#4CAF50; color:white; text-align:center; padding:20px; font-size:24px; display:flex; justify-content:center; align-items:center; gap:20px;}
+.calendar-header button { background-color:transparent; color:white; border:none; font-size:28px; cursor:pointer; user-select:none; padding:0 10px; transition: color 0.3s ease; }
+.calendar-header button:hover { color:#a5d6a7;}
+.calendar-table { width:100%; border-collapse:collapse; table-layout:fixed;}
+.calendar-table th, .calendar-table td { width:12.5%; border:1px solid #ddd; text-align:center; padding:20px; vertical-align:top; word-wrap:break-word; }
+.calendar-table th:first-child, .calendar-table td:first-child { width:5%; background-color:#f0f0f0; font-size:12px; font-weight:bold; user-select:none;}
+.week-number { background-color:#f0f0f0; font-size:12px; font-weight:bold; padding:10px 5px;}
+.calendar-day { cursor:pointer; min-height:60px; position:relative; transition:background-color 0.2s ease;}
+.calendar-day:hover { background-color:#f9f9f9; }
+.calendar-day.has-event { background-color:#e0f7e0; }
+.event-popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.3); z-index:1000; width:320px; max-width:90%; }
+.event-popup input, .event-popup textarea { width:100%; padding:8px; margin-bottom:10px; box-sizing:border-box; font-size:14px; border:1px solid #ccc; border-radius:4px; resize:vertical;}
+.event-popup button { padding:10px 15px; background-color:#4CAF50; color:white; border:none; cursor:pointer; border-radius:4px; font-size:14px;}
+.event-popup button:hover { background-color:#45a049; }
+.event-popup .close { position:absolute; top:8px; right:12px; font-size:18px; border:none; background:none; cursor:pointer; color:#666; font-weight:bold; }
+#login-section { text-align:center; margin-bottom:20px;}
+#logoutBtn { display:none; }
+#day-selection { display:none; text-align:center; margin-top:20px;}
+.day-button { background-color:#007BFF; color:white; border:none; padding:15px 25px; font-size:18px; border-radius:25px; margin:5px; cursor:pointer; transition:background-color 0.3s, transform 0.3s; box-shadow:0 4px 10px rgba(0,0,0,0.2);}
+.day-button:hover { background-color:#0056b3; transform:translateY(-2px);}
+</style>
 </head>
 <body>
 
@@ -68,10 +65,10 @@
   <input type="text" id="event-title" placeholder="Titel" />
   <textarea id="event-description" placeholder="Beskrivning" rows="4"></textarea>
   <button onclick="saveEvent()">Spara</button>
-  <button onclick="clearEvent()" style="background-color: #d9534f; margin-left: 10px;">Rensa</button>
+  <button onclick="clearEvent()" style="background-color:#d9534f;margin-left:10px;">Rensa</button>
 </div>
 
-<!-- Firebase SDK -->
+<!-- Firebase v11 SDK -->
 <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
@@ -85,156 +82,73 @@
     messagingSenderId: "NUMMER",
     appId: "DITT_APP_ID"
   };
-
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  const months = ["Januari","Februari","Mars","April","Maj","Juni","Juli","Augusti","September","Oktober","November","December"];
-  const weekdays = ["Sön","Mån","Tis","Ons","Tor","Fre","Lör"];
-  let selectedDate = null;
-  let currentYear = new Date().getFullYear();
-  let currentMonth = new Date().getMonth();
-  let events = {};
+  const months=["Januari","Februari","Mars","April","Maj","Juni","Juli","Augusti","September","Oktober","November","December"];
+  const weekdays=["Sön","Mån","Tis","Ons","Tor","Fre","Lör"];
+  let selectedDate=null;
+  let currentYear=new Date().getFullYear();
+  let currentMonth=new Date().getMonth();
+  let events={};
 
-  function getWeekNumber(date) {
-    const temp = new Date(date.getTime());
-    temp.setHours(0,0,0,0);
-    temp.setDate(temp.getDate() + 4 - (temp.getDay() || 7));
-    const yearStart = new Date(temp.getFullYear(),0,1);
-    return Math.ceil((((temp - yearStart)/86400000)+1)/7);
-  }
+  function getWeekNumber(date){ const temp=new Date(date.getTime()); temp.setHours(0,0,0,0); temp.setDate(temp.getDate()+4-(temp.getDay()||7)); const yearStart=new Date(temp.getFullYear(),0,1); return Math.ceil((((temp-yearStart)/86400000)+1)/7); }
 
-  function renderCalendar() {
-    const year = currentYear;
-    const month = currentMonth;
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-
-    document.getElementById('calendar-header').textContent = `${months[month]} ${year}`;
-    const table = document.getElementById('calendar-table');
-    table.innerHTML = "";
-
-    const thead = table.createTHead();
-    const headRow = thead.insertRow();
-    const weekHead = document.createElement('th');
-    weekHead.textContent = "Vecka";
-    headRow.appendChild(weekHead);
-    weekdays.forEach(day => {
-      const th = document.createElement('th');
-      th.textContent = day;
-      headRow.appendChild(th);
-    });
-
-    const tbody = table.createTBody();
-    let row = tbody.insertRow();
-    let currentDate = new Date(year, month, 1);
-    const firstWeekNumber = getWeekNumber(currentDate);
-    let weekCell = row.insertCell();
-    weekCell.className = 'week-number';
-    weekCell.textContent = "v. " + firstWeekNumber;
-
-    for (let i = 0; i < currentDate.getDay(); i++) {
-      row.insertCell();
-    }
-
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      currentDate = new Date(year, month, day);
-      if (row.cells.length === 8) {
-        row = tbody.insertRow();
-        const weekNum = getWeekNumber(currentDate);
-        const weekCell = row.insertCell();
-        weekCell.className = 'week-number';
-        weekCell.textContent = "v. " + weekNum;
-      }
-      const cell = row.insertCell();
-      cell.className = 'calendar-day';
-      cell.textContent = day;
-      cell.onclick = () => showPopup(year, month, day);
-      const dateString = currentDate.toISOString().split('T')[0];
-      if (events[dateString]) { cell.classList.add('has-event'); }
+  function renderCalendar(){
+    const year=currentYear;
+    const month=currentMonth;
+    const firstDay=new Date(year,month,1);
+    const lastDay=new Date(year,month+1,0);
+    document.getElementById('calendar-header').textContent=`${months[month]} ${year}`;
+    const table=document.getElementById('calendar-table');
+    table.innerHTML="";
+    const thead=table.createTHead();
+    const headRow=thead.insertRow();
+    const weekHead=document.createElement('th'); weekHead.textContent="Vecka"; headRow.appendChild(weekHead);
+    weekdays.forEach(day=>{ const th=document.createElement('th'); th.textContent=day; headRow.appendChild(th); });
+    const tbody=table.createTBody();
+    let row=tbody.insertRow();
+    let currentDate=new Date(year,month,1);
+    const firstWeekNumber=getWeekNumber(currentDate);
+    let weekCell=row.insertCell(); weekCell.className='week-number'; weekCell.textContent="v. "+firstWeekNumber;
+    for(let i=0;i<currentDate.getDay();i++){ row.insertCell(); }
+    for(let day=1;day<=lastDay.getDate();day++){
+      currentDate=new Date(year,month,day);
+      if(row.cells.length===8){ row=tbody.insertRow(); const weekNum=getWeekNumber(currentDate); const weekCell=row.insertCell(); weekCell.className='week-number'; weekCell.textContent="v. "+weekNum;}
+      const cell=row.insertCell(); cell.className='calendar-day'; cell.textContent=day;
+      cell.onclick=()=>showPopup(year,month,day);
+      const dateString=currentDate.toISOString().split('T')[0];
+      if(events[dateString]){ cell.classList.add('has-event'); }
     }
   }
 
-  function showPopup(year, month, day) {
-    selectedDate = new Date(year, month, day);
-    const dateString = selectedDate.toISOString().split('T')[0];
-    const event = events[dateString] || {};
-    document.getElementById('event-date').textContent = dateString;
-    document.getElementById('event-title').value = event.title || '';
-    document.getElementById('event-description').value = event.description || '';
-    document.getElementById('event-popup').style.display = 'block';
-  }
-  function closePopup() { document.getElementById('event-popup').style.display = 'none'; }
+  function showPopup(year,month,day){ selectedDate=new Date(year,month,day); const dateString=selectedDate.toISOString().split('T')[0]; const event=events[dateString]||{}; document.getElementById('event-date').textContent=dateString; document.getElementById('event-title').value=event.title||''; document.getElementById('event-description').value=event.description||''; document.getElementById('event-popup').style.display='block'; }
+  function closePopup(){ document.getElementById('event-popup').style.display='none'; }
 
-  function saveEvent() {
-    if (!selectedDate) return;
-    const title = document.getElementById('event-title').value.trim();
-    const description = document.getElementById('event-description').value.trim();
-    const dateString = selectedDate.toISOString().split('T')[0];
-    const user = auth.currentUser;
-    if (!user) return alert("Logga in först!");
+  function saveEvent(){ if(!selectedDate)return; const title=document.getElementById('event-title').value.trim(); const description=document.getElementById('event-description').value.trim(); const dateString=selectedDate.toISOString().split('T')[0]; const user=auth.currentUser; if(!user)return alert("Logga in först!"); db.collection("users").doc(user.uid).collection("events").doc(dateString).set({title,description}).then(()=>{ events[dateString]={title,description}; closePopup(); renderCalendar(); }); }
+  function clearEvent(){ if(!selectedDate)return; const dateString=selectedDate.toISOString().split('T')[0]; const user=auth.currentUser; if(!user)return; db.collection("users").doc(user.uid).collection("events").doc(dateString).delete().then(()=>{ delete events[dateString]; closePopup(); renderCalendar(); }); }
+  function changeMonth(direction){ currentMonth+=direction; if(currentMonth<0){currentMonth=11; currentYear--;} else if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar(); }
 
-    db.collection("users").doc(user.uid).collection("events").doc(dateString).set({ title, description })
-      .then(() => {
-        events[dateString] = {title, description};
-        closePopup();
-        renderCalendar();
-      });
-  }
+  const daySelection=document.getElementById("day-selection");
 
-  function clearEvent() {
-    if (!selectedDate) return;
-    const dateString = selectedDate.toISOString().split('T')[0];
-    const user = auth.currentUser;
-    if (!user) return;
+  document.getElementById("googleLogin").addEventListener("click",()=>{ const provider=new firebase.auth.GoogleAuthProvider(); auth.signInWithPopup(provider).catch(console.error); });
+  document.getElementById("logoutBtn").addEventListener("click",()=>{ auth.signOut(); });
 
-    db.collection("users").doc(user.uid).collection("events").doc(dateString).delete().then(() => {
-      delete events[dateString];
-      closePopup();
-      renderCalendar();
-    });
-  }
-
-  function changeMonth(direction) {
-    currentMonth += direction;
-    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-    else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-    renderCalendar();
-  }
-
-  // Google-login
-  document.getElementById("googleLogin").addEventListener("click", () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(console.error);
-  });
-
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    auth.signOut();
-  });
-
-  const daySelection = document.getElementById("day-selection");
-
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById("calendar-container").style.display = "block";
-      daySelection.style.display = "block"; // Visa dag-knappar
-      document.getElementById("googleLogin").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "inline-block";
-      document.getElementById("user-info").textContent = "Inloggad som: " + user.displayName;
-
-      // Ladda händelser från Firestore
-      db.collection("users").doc(user.uid).collection("events").get().then(snapshot => {
-        events = {};
-        snapshot.forEach(doc => { events[doc.id] = doc.data(); });
-        renderCalendar();
-      });
-    } else {
-      document.getElementById("calendar-container").style.display = "none";
-      daySelection.style.display = "none"; // Dölj dag-knappar
-      document.getElementById("googleLogin").style.display = "inline-block";
-      document.getElementById("logoutBtn").style.display = "none";
-      document.getElementById("user-info").textContent = "";
+  auth.onAuthStateChanged(user=>{
+    if(user){
+      document.getElementById("calendar-container").style.display="block";
+      daySelection.style.display="block";
+      document.getElementById("googleLogin").style.display="none";
+      document.getElementById("logoutBtn").style.display="inline-block";
+      document.getElementById("user-info").textContent="Inloggad som: "+user.displayName;
+      db.collection("users").doc(user.uid).collection("events").get().then(snapshot=>{ events={}; snapshot.forEach(doc=>{ events[doc.id]=doc.data(); }); renderCalendar(); });
+    }else{
+      document.getElementById("calendar-container").style.display="none";
+      daySelection.style.display="none";
+      document.getElementById("googleLogin").style.display="inline-block";
+      document.getElementById("logoutBtn").style.display="none";
+      document.getElementById("user-info").textContent="";
     }
   });
 </script>
