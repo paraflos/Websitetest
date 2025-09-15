@@ -17,33 +17,45 @@
         .calendar {
             display: flex;
             flex-direction: column;
+            width: 90%;
+            max-width: 1200px;
             border: 1px solid #ccc;
             border-radius: 10px;
-            overflow: hidden;
-            width: 300px;
             background-color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .calendar-header {
             background-color: #4CAF50;
             color: white;
             text-align: center;
-            padding: 10px;
-            font-size: 1.2em;
+            padding: 20px;
+            font-size: 2em;
         }
         .calendar-days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
+            grid-gap: 1px;
             border-top: 1px solid #ccc;
         }
         .calendar-day {
-            padding: 15px;
+            padding: 30px;
             text-align: center;
             cursor: pointer;
-            border-right: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .calendar-day:hover {
             background-color: #f0f0f0;
+        }
+        .week-number {
+            text-align: center;
+            font-weight: bold;
+            background-color: #e0e0e0;
+            padding: 5px;
+            border-right: 1px solid #ccc;
+            font-size: 1em;  /* Minska textstorleken */
         }
         .event-popup {
             display: none;
@@ -56,6 +68,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 100;
+            width: 300px;
         }
         .event-popup input, .event-popup textarea {
             width: 100%;
@@ -80,13 +93,6 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
-        }
-        .week-number {
-            text-align: center;
-            font-weight: bold;
-            background-color: #f0f0f0;
-            padding: 5px;
-            border-bottom: 1px solid #ccc;
         }
     </style>
 </head>
@@ -114,7 +120,7 @@
     const months = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
     const currentDate = new Date();
     let selectedDate = null;
-    let events = {}; // För att lagra händelser per datum
+    const events = {}; // För att lagra händelser per datum
 
     // Funktion för att beräkna veckonummer
     function getWeekNumber(date) {
@@ -143,6 +149,7 @@
             const dayElement = document.createElement('div');
             dayElement.textContent = day;
             dayElement.style.fontWeight = "bold";
+            dayElement.style.padding = "10px";
             calendarDays.appendChild(dayElement);
         });
 
@@ -164,7 +171,7 @@
             const date = new Date(year, month, i);
             const weekNumber = getWeekNumber(date);
             
-            // Lägg till vecko-nummer ovanför dagarna i kalendern
+            // Lägg till vecko-nummer på vänster sida av varje vecka
             if (i === 1 || date.getDay() === 0) {  // Om det är början på en ny vecka
                 const weekLabel = document.createElement('div');
                 weekLabel.classList.add('week-number');
