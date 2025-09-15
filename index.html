@@ -1,243 +1,234 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalender</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        .calendar {
-            display: flex;
-            flex-direction: column;
-            width: 90%;
-            max-width: 1200px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            background-color: #fff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .calendar-header {
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            font-size: 2em;
-        }
-        .calendar-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-gap: 1px;
-            border-top: 1px solid #ccc;
-        }
-        .calendar-day {
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 1.5em;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .calendar-day:hover {
-            background-color: #f0f0f0;
-        }
-        .week-number {
-            text-align: center;
-            font-weight: bold;
-            background-color: #e0e0e0;
-            padding: 5px;
-            border-right: 1px solid #ccc;
-            font-size: 1em;  /* Minska textstorleken */
-        }
-        .event-popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            width: 300px;
-        }
-        .event-popup input, .event-popup textarea {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
-        }
-        .event-popup button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .event-popup button:hover {
-            background-color: #45a049;
-        }
-        .close-popup {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalender</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .calendar {
+      width: 90%;
+      max-width: 1200px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .calendar-header {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 2em;
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: 1fr repeat(7, 1fr); /* 1 för vecka + 7 dagar */
+      text-align: center;
+    }
+
+    .calendar-day,
+    .week-number,
+    .weekday {
+      border: 1px solid #ccc;
+      padding: 20px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+    }
+
+    .weekday {
+      font-weight: bold;
+      background-color: #eee;
+    }
+
+    .week-number {
+      background-color: #f3f3f3;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+
+    .calendar-day:hover {
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+
+    .event-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+
+    .event-popup input,
+    .event-popup textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+
+    .event-popup button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .close-popup {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
 <div class="calendar">
-    <div class="calendar-header" id="calendar-header">
-        <!-- Kalenderns rubrik, t.ex. månad och år -->
-    </div>
-    <div class="calendar-days" id="calendar-days">
-        <!-- Dagarnas rutor kommer här -->
-    </div>
+  <div class="calendar-header" id="calendar-header"></div>
+  <div class="calendar-days" id="calendar-days"></div>
 </div>
 
-<!-- Pop-up för att lägga till händelser -->
+<!-- Pop-up -->
 <div class="event-popup" id="event-popup">
-    <button class="close-popup" onclick="closePopup()">×</button>
-    <h3>Lägg till en händelse</h3>
-    <input type="text" id="event-title" placeholder="Titel på händelse">
-    <textarea id="event-description" placeholder="Beskrivning"></textarea>
-    <button onclick="saveEvent()">Spara händelse</button>
+  <button class="close-popup" onclick="closePopup()">×</button>
+  <h3>Lägg till händelse</h3>
+  <input type="text" id="event-title" placeholder="Titel">
+  <textarea id="event-description" placeholder="Beskrivning"></textarea>
+  <button onclick="saveEvent()">Spara</button>
 </div>
 
 <script>
-    const months = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
-    const currentDate = new Date();
-    let selectedDate = null;
-    const events = {}; // För att lagra händelser per datum
+  const months = ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"];
+  const currentDate = new Date();
+  let selectedDate = null;
+  const events = {};
 
-    // Funktion för att beräkna veckonummer
-    function getWeekNumber(date) {
-        const startDate = new Date(date.getFullYear(), 0, 1);
-        const days = Math.floor((date - startDate) / (24 * 60 * 60 * 1000));
-        const weekNumber = Math.ceil((days + startDate.getDay() + 1) / 7);
-        return weekNumber;
+  function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  }
+
+  function renderCalendar() {
+    const month = currentDate.getMonth();
+    const year = currentDate.getFullYear();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay(); // 0 = söndag
+
+    document.getElementById("calendar-header").textContent = `${months[month]} ${year}`;
+    const calendarDays = document.getElementById("calendar-days");
+    calendarDays.innerHTML = '';
+
+    // Rubriker
+    const headers = ["Vecka", "Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
+    headers.forEach(h => {
+      const div = document.createElement('div');
+      div.textContent = h;
+      div.className = 'weekday';
+      calendarDays.appendChild(div);
+    });
+
+    let date = 1;
+    let currentRow = 0;
+    let totalDays = lastDay.getDate();
+    const firstWeekday = firstDay.getDay();
+
+    while (date <= totalDays) {
+      const weekDate = new Date(year, month, date);
+      const weekNumber = getWeekNumber(weekDate);
+
+      // Lägg till veckonummer
+      const weekDiv = document.createElement('div');
+      weekDiv.className = 'week-number';
+      weekDiv.textContent = `V. ${weekNumber}`;
+      calendarDays.appendChild(weekDiv);
+
+      for (let i = 0; i < 7; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'calendar-day';
+
+        if (currentRow === 0 && i < firstWeekday) {
+          cell.textContent = '';
+        } else if (date > totalDays) {
+          cell.textContent = '';
+        } else {
+          cell.textContent = date;
+          cell.onclick = () => showPopup(year, month, date);
+
+          const dateString = new Date(year, month, date).toISOString().split('T')[0];
+          if (events[dateString]) {
+            cell.style.backgroundColor = '#ddd';
+          }
+
+          date++;
+        }
+        calendarDays.appendChild(cell);
+      }
+      currentRow++;
+    }
+  }
+
+  function showPopup(year, month, day) {
+    selectedDate = new Date(year, month, day);
+    document.getElementById('event-title').value = '';
+    document.getElementById('event-description').value = '';
+
+    const dateString = selectedDate.toISOString().split('T')[0];
+    if (events[dateString]) {
+      document.getElementById('event-title').value = events[dateString][0].title;
+      document.getElementById('event-description').value = events[dateString][0].description;
     }
 
-    // Funktion för att rendera kalendern
-    function renderCalendar() {
-        const month = currentDate.getMonth();
-        const year = currentDate.getFullYear();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        
-        const calendarHeader = document.getElementById('calendar-header');
-        calendarHeader.textContent = `${months[month]} ${year}`;
-        
-        const calendarDays = document.getElementById('calendar-days');
-        calendarDays.innerHTML = '';
-        
-        // Lägg till veckodagsnamn
-        const weekdays = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
-        weekdays.forEach(day => {
-            const dayElement = document.createElement('div');
-            dayElement.textContent = day;
-            dayElement.style.fontWeight = "bold";
-            dayElement.style.padding = "10px";
-            calendarDays.appendChild(dayElement);
-        });
+    document.getElementById('event-popup').style.display = 'block';
+  }
 
-        // Lägg till veckonumren och dagarna
-        let currentWeekNumber = getWeekNumber(firstDay); // Beräkna veckonummer för den första dagen
+  function closePopup() {
+    document.getElementById('event-popup').style.display = 'none';
+  }
 
-        for (let i = 0; i < firstDay.getDay(); i++) {
-            const emptyCell = document.createElement('div');
-            calendarDays.appendChild(emptyCell);
-        }
+  function saveEvent() {
+    const title = document.getElementById('event-title').value;
+    const description = document.getElementById('event-description').value;
 
-        for (let i = 1; i <= lastDay.getDate(); i++) {
-            const dayCell = document.createElement('div');
-            dayCell.classList.add('calendar-day');
-            dayCell.textContent = i;
-            dayCell.onclick = () => showPopup(year, month, i);
-            
-            // Beräkna vecko-nummer för varje dag
-            const date = new Date(year, month, i);
-            const weekNumber = getWeekNumber(date);
-            
-            // Lägg till vecko-nummer på vänster sida av varje vecka
-            if (i === 1 || date.getDay() === 0) {  // Om det är början på en ny vecka
-                const weekLabel = document.createElement('div');
-                weekLabel.classList.add('week-number');
-                weekLabel.textContent = `Vecka ${weekNumber}`;
-                calendarDays.appendChild(weekLabel);
-            }
-
-            // Kontrollera om det finns en händelse för den här dagen
-            const dateString = new Date(year, month, i).toISOString().split('T')[0]; // yyyy-mm-dd
-            if (events[dateString]) {
-                dayCell.style.backgroundColor = '#ddd'; // Markera dagar med händelser
-            }
-            
-            calendarDays.appendChild(dayCell);
-        }
+    if (!title) {
+      alert("Titeln är obligatorisk!");
+      return;
     }
 
-    // Funktion för att visa pop-up för att lägga till händelse
-    function showPopup(year, month, day) {
-        selectedDate = new Date(year, month, day);
-        const eventPopup = document.getElementById('event-popup');
-        document.getElementById('event-title').value = ''; // Rensa tidigare titel
-        document.getElementById('event-description').value = ''; // Rensa tidigare beskrivning
-
-        // Kontrollera om det redan finns en händelse
-        const dateString = selectedDate.toISOString().split('T')[0];
-        if (events[dateString] && events[dateString].length > 0) {
-            document.getElementById('event-title').value = events[dateString][0].title;
-            document.getElementById('event-description').value = events[dateString][0].description;
-        }
-
-        eventPopup.style.display = 'block';
-    }
-
-    // Funktion för att stänga pop-up
-    function closePopup() {
-        const eventPopup = document.getElementById('event-popup');
-        eventPopup.style.display = 'none';
-    }
-
-    // Funktion för att spara händelsen
-    function saveEvent() {
-        const title = document.getElementById('event-title').value;
-        const description = document.getElementById('event-description').value;
-
-        if (!title) {
-            alert("Titeln är obligatorisk!");
-            return;
-        }
-
-        const dateString = selectedDate.toISOString().split('T')[0]; // yyyy-mm-dd
-        if (!events[dateString]) {
-            events[dateString] = [];
-        }
-
-        // Lägg till ny händelse för detta datum
-        events[dateString] = [{ title, description }];
-        alert("Händelsen sparades!");
-
-        // Stäng pop-up och rendera kalendern igen
-        closePopup();
-        renderCalendar();
-    }
-
-    // Initiera kalendern
+    const dateString = selectedDate.toISOString().split('T')[0];
+    events[dateString] = [{ title, description }];
+    alert("Händelsen sparad!");
+    closePopup();
     renderCalendar();
+  }
+
+  renderCalendar();
 </script>
 
 </body>
